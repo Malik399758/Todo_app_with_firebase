@@ -4,7 +4,7 @@ class FirebaseService{
 
   // get Data
   Stream<QuerySnapshot> getData(){
-    return FirebaseFirestore.instance.collection('todo_app_details').snapshots();
+    return FirebaseFirestore.instance.collection('todo_app_details').orderBy('timestamp', descending: true).snapshots();
   }
 
   // delete Data
@@ -20,6 +20,13 @@ class FirebaseService{
       'description' : description
     });
  }
+
+  Future<void> markTaskAsCompleted(String docId) async {
+    await FirebaseFirestore.instance.collection('your_collection_name').doc(docId).update({
+      'completed': true,
+    });
+  }
+
 
 
 

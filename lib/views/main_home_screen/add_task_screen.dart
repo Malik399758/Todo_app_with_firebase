@@ -5,6 +5,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:todo_app_firebase/controller/firebase_services/firebase_service.dart';
+import 'package:todo_app_firebase/views/auth_module/signup_signin_screen.dart';
 import 'package:todo_app_firebase/views/main_home_screen/home_screen1.dart';
 
 class AddTaskScreen extends StatefulWidget {
@@ -29,7 +30,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       isActive = !isActive;
     });
   }
-
+  // sign out
 
   // Add Data
   Future<void> addData()async{
@@ -40,7 +41,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       await firebaseFireStore.collection('todo_app_details').add({
         'title' : titleController.text,
         'description' : descriptionController.text,
-        'timestamp' : timestamp ?? Timestamp.now()
+        'timestamp' : timestamp ?? Timestamp.now(),
+        'isCompleted': false, // ✅ Add this line
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.green,
@@ -76,11 +78,63 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   Future<void> deleteData(String id)async{
     await FirebaseFirestore.instance.collection('todo_app_details').doc(id).delete();
   }*/
+
+  Future<void> accountSignOut()async{
+    await FirebaseAuth.instance.signOut();
+  }
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: PopupMenuButton<String>(
+              color: Colors.white,
+              icon: Icon(Icons.more_vert, color: Colors.white),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              onSelected: (value) {
+                if (value == 'signout') {
+                  try {
+                    accountSignOut();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: Colors.green,
+                        content: Text(
+                          'Account sign out successfully!!',
+                          style: GoogleFonts.poppins(color: Colors.white),
+                        ),
+                      ),
+                    );
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => SignupSigninScreen()),
+                    );
+                  } catch (e) {
+                    print('Error ------->$e');
+                  }
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem<String>(
+                  value: 'signout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout, color: Colors.red),
+                      SizedBox(width: 10),
+                      Text('Sign Out', style: GoogleFonts.poppins()),
+                    ],
+                  ),
+                ),
+                // Add more menu items here if needed
+              ],
+            ),
+          )
+
+        ],
         title: Text('Add task',style: GoogleFonts.poppins(color: Colors.white),),
         backgroundColor: Colors.blue,
       ),
